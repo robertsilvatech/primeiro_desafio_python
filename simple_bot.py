@@ -16,18 +16,7 @@ from configure_bot import main as config_bot
 
 
 def start(update, context):
-    message = 'Seja bem vindo ao desafio Python\n\npara obter ajuda utiliza /help'
-    context.bot.send_message(chat_id=update.effective_chat.id, text=message)
-
-def help_bot(update, context):
-    message = '''Central de ajuda do Bot\n
-    Este bot foi desenvolvido para efetuar automações em ambiente VMWare e AWS\n
-    AWS\n
-    /aws_ec2_all - Listar todas as instancias EC2\n
-    /aws_ec2_state_instance <instance_id> - Verifica o status de uma instance EC2\n
-    /aws_ec2_start_instance <instance_id> - Inicia uma instance EC2\n
-    /aws_ec2_stop_instance <instance_id> - Para uma instance EC2\n
-    '''
+    message = 'Seja bem vindo ao desafio Python'
     context.bot.send_message(chat_id=update.effective_chat.id, text=message)
 
 def echo(update, context):
@@ -145,7 +134,6 @@ def main():
     # Dispatcher: Envia as mensagens para os handlers
     dispatcher = updater.dispatcher
     dispatcher.add_handler(CommandHandler('start', start))
-    dispatcher.add_handler(CommandHandler('help', help_bot))
     dispatcher.add_handler(CommandHandler('aws_ec2_all', aws_ec2_all))
     dispatcher.add_handler(CommandHandler('aws_ec2_start_instance', aws_ec2_start_instance))
     dispatcher.add_handler(CommandHandler('aws_ec2_stop_instance', aws_ec2_stop_instance))

@@ -6,11 +6,28 @@ from telegram.ext import MessageHandler
 from handlers.aws.ec2 import AWSEC2
 from handlers.aws.iam import IAM
 from handlers.aws.ebs import EBS
+from handlers.vmware.vcenter import login_vmware
+from handlers.vmware.vcenter import logout_vmware
+from handlers.vmware.vcenter import list_vms
+from handlers.vmware.vcenter import poweron_vm
+from handlers.vmware.vcenter import poweroff_vm
+from handlers.vmware.vcenter import update_cpu
 from configure_bot import main as config_bot
 
 
 def start(update, context):
-    message = 'Seja bem vindo ao desafio Python'
+    message = 'Seja bem vindo ao desafio Python\n\npara obter ajuda utiliza /help'
+    context.bot.send_message(chat_id=update.effective_chat.id, text=message)
+
+def help_bot(update, context):
+    message = '''Central de ajuda do Bot\n
+    Este bot foi desenvolvido para efetuar automações em ambiente VMWare e AWS\n
+    AWS\n
+    /aws_ec2_all - Listar todas as instancias EC2\n
+    /aws_ec2_state_instance <instance_id> - Verifica o status de uma instance EC2\n
+    /aws_ec2_start_instance <instance_id> - Inicia uma instance EC2\n
+    /aws_ec2_stop_instance <instance_id> - Para uma instance EC2\n
+    '''
     context.bot.send_message(chat_id=update.effective_chat.id, text=message)
 
 def echo(update, context):
@@ -27,7 +44,7 @@ def aws_ec2_all(update, context):
     for instance in instances:
         instance_id = instance['instance_id']
         instance_state_name = instance['instance_state_name']
-        #info = f'{instance_id} - {instance_state_name}\n'
+        info = f'{instance_id} - {instance_state_name}\n'
         message += instance_id + '\n'
     context.bot.send_message(chat_id=update.message.chat_id, text=message)
 
@@ -73,16 +90,62 @@ def aws_ebs_get_all(update, context):
         message += f'VolumeId: {volume_id} - Volume Type: {volume_type} - Volume State: {volume_state}\n'
     context.bot.send_message(chat_id=update.message.chat_id, text=message)
 
+def vcenter_list_vms(update, context):
+    token_vmware = login_vmware()
+    vms = list_vms(token=token_vmware)
+    if vms:
+        message = ''
+        for vm in vms:
+            vm_id = vm['vm_id']
+            vm_name = vm['vm_name']
+            vm_power_state = vm['vm_power_state']
+            vm_cpu_count = vm['vm_cpu_count']
+            vm_memory_size_mb = vm ['vm_memory_size_mb']
+            message += f'ID: {vm_id} - Name: {vm_name} - State: {vm_power_state} - CPU: {vm_cpu_count} - Memory: {vm_memory_size_mb}\n'
+            print(message)
+        context.bot.send_message(chat_id=update.message.chat_id, text=message)
+
+def vcenter_poweroff_vm(update, context):
+    token_vmware = login_vmware()
+    vmname = context.args[0]
+    message = poweroff_vm(token_vmware, vmname)
+    print(message)
+    context.bot.send_message(chat_id=update.message.chat_id, text=message)
+
+def vcenter_poweron_vm(update, context):
+    token_vmware = login_vmware()
+    try:
+        vmname = context.args[0]
+        message = poweron_vm(token_vmware, vmname)
+    except:
+        message = 'vm id is missing'
+    
+    context.bot.send_message(chat_id=update.message.chat_id, text=message)
+
+def vcenter_update_cpu(update, context):
+    token_vmware = login_vmware()
+    try:
+        vmname = context.args[0]
+        cpu = context.args[1]
+        message = update_cpu(token_vmware, vmname, cpu)
+    except:
+        message = 'vm id or cpu count is missing'
+        context.bot.send_message(chat_id=update.message.chat_id, text=message)
+    
+    
+
 token = '1288974768:AAGslAaJ-OY0B6UZQgwrB8CHnhF-2t1T_aw'
 
-
 def main():
+
     conf = config_bot()
     print(conf)
+    print('Aqui')
     updater = Updater(token=token, use_context=True)
     # Dispatcher: Envia as mensagens para os handlers
     dispatcher = updater.dispatcher
     dispatcher.add_handler(CommandHandler('start', start))
+    dispatcher.add_handler(CommandHandler('help', help_bot))
     dispatcher.add_handler(CommandHandler('aws_ec2_all', aws_ec2_all))
     dispatcher.add_handler(CommandHandler('aws_ec2_start_instance', aws_ec2_start_instance))
     dispatcher.add_handler(CommandHandler('aws_ec2_stop_instance', aws_ec2_stop_instance))
@@ -90,6 +153,10 @@ def main():
     dispatcher.add_handler(CommandHandler('aws_iam_get_users', aws_iam_get_users))
     dispatcher.add_handler(CommandHandler('aws_iam_users_without_mfa', aws_iam_users_without_mfa_devices))
     dispatcher.add_handler(CommandHandler('aws_ebs_get_all', aws_ebs_get_all))
+    dispatcher.add_handler(CommandHandler('vcenter_list_vms', vcenter_list_vms))
+    dispatcher.add_handler(CommandHandler('vcenter_poweron_vm', vcenter_poweron_vm))
+    dispatcher.add_handler(CommandHandler('vcenter_poweroff_vm', vcenter_poweroff_vm))
+    dispatcher.add_handler(CommandHandler('vcenter_update_cpu', vcenter_update_cpu))
     dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), echo))
     dispatcher.add_handler(MessageHandler(Filters.command, unknown))
     # Start the Bot

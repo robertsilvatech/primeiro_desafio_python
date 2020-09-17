@@ -1,5 +1,7 @@
 # README
 
+Este repositório contém os scripts utilizados como base para o projeto executado durante o primeiro Desafio Python.
+
 ## Requisitos
 
 Python 3 instalando e as bibliotecas abaixo:

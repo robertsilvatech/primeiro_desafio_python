@@ -73,7 +73,7 @@ def poweroff_vm(token, vmname):
     response = requests.post(url, headers=headers, verify=False)
     if response.status_code == 200:
         message = f'VM {vmname} was stopped'
-        return message
+        return message 
     elif response.status_code == 400:
         content = response.json()
         message = content['value']['messages'][0]['default_message']
@@ -181,8 +181,7 @@ def get_folder_id(token, folder_name='DesafioPython'):
         content = response.json()
         folder_id = content['value'][0]['folder']
         return folder_id
-
-
+ 
 def create_vm_default(token, vm_name, cluster_id, datastore_id, folder_id):
     headers = {
         'Content-Type': 'application/json',

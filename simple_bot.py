@@ -47,7 +47,7 @@ def aws_ec2_all(update, context):
         message += f'--> Instance Id: {instance_id} - Instance Name: {instance_name} - Instance State:{instance_state_name}\n'
     context.bot.send_message(chat_id=update.message.chat_id, text=message)
 
-def aws_ec2_start_instance(update, context):
+def aws_ec2_start_instanceec(update, context):
     try:
         instance_id = context.args[0]
         action = ec2_start(instance_id)
